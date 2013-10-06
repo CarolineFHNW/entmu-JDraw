@@ -9,9 +9,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 
 import jdraw.framework.Figure;
+import jdraw.framework.FigureEvent;
 import jdraw.framework.FigureHandle;
 import jdraw.framework.FigureListener;
 
@@ -27,12 +29,15 @@ public class Rect implements Figure {
 	 */
 	private java.awt.Rectangle rectangle;
 	
+	/** Register all DrawModelListeners in a list */
+	private List<FigureListener> fListeners = new ArrayList<FigureListener>();
+	
 	/**
 	 * Create a new rectangle of the given dimension.
 	 * @param x the x-coordinate of the upper left corner of the rectangle
 	 * @param y the y-coordinate of the upper left corner of the rectangle
-	 * @param w the rectangle�s width
-	 * @param h the rectangle�s height
+	 * @param w the rectangle's width
+	 * @param h the rectangle's height
 	 */
 	public Rect(int x, int y, int w, int h) {
 		rectangle = new java.awt.Rectangle(x, y, w, h);
@@ -54,13 +59,13 @@ public class Rect implements Figure {
 	@Override
 	public void setBounds(Point origin, Point corner) {
 		rectangle.setFrameFromDiagonal(origin, corner);
-		// TODO notification of change
+		notifyFigureListener();		// notification of change
 	}
 
 	@Override
 	public void move(int dx, int dy) {
 		rectangle.setLocation(rectangle.x + dx, rectangle.y + dy);
-		// TODO notification of change
+		notifyFigureListener();		// notification of change
 	}
 
 	@Override
@@ -84,12 +89,24 @@ public class Rect implements Figure {
 
 	@Override
 	public void addFigureListener(FigureListener listener) {
-		// TODO Auto-generated method stub
+		fListeners.add(listener);
 	}
 
 	@Override
 	public void removeFigureListener(FigureListener listener) {
-		// TODO Auto-generated method stub
+		fListeners.remove(listener);
+	}
+	
+	/**
+	 * Notification method 
+	 * This class is being observed by DrawModel implementing classes 
+	 * This method notifies all observers on changes
+	 * figureChanged is implemented in DrawModel Ctor
+	 */
+	public void notifyFigureListener(){
+		for (FigureListener fl : fListeners) {
+			fl.figureChanged(new FigureEvent(this));
+		}
 	}
 
 	@Override
