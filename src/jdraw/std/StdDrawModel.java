@@ -106,6 +106,7 @@ public class StdDrawModel implements DrawModel {
 	public void setFigureIndex(Figure f, int index) {
 		// get a copy of figurelist to avoid concurrency problem
 		List<Figure> figurelistCopy = (List<Figure>) getFigures();
+		int pos = figurelistCopy.indexOf(index);
 
 		if(!figurelistCopy.contains(f)) {
 			throw new IllegalArgumentException();
@@ -115,37 +116,17 @@ public class StdDrawModel implements DrawModel {
 			throw new IndexOutOfBoundsException();
 		}
 
-		if(figurelistCopy.indexOf(f) != index){
+		if(pos != index){
 
 			// remove element that needs repositioning
 			figurelistCopy.remove(f);
+			// add element at required position
+			figurelistCopy.add(index, f);
 
-			// prepare a new list that will contain the new order
-			List<Figure> figurelistNew = new LinkedList<Figure>();
-			List<Figure> sl1 = new LinkedList<Figure>();
-			List<Figure> sl2 = new LinkedList<Figure>();
-
-			// divide current list at the index position in two sublists
-			sl1 = figurelistCopy.subList(0, index);
-			sl2 = figurelistCopy.subList(index, figurelistCopy.size());
-
-			// add up sublists and the element that needs repositioning
-			figurelistNew.addAll(sl1);
-			figurelistNew.add(f);
-			figurelistNew.addAll(sl2);
-
-			// to check the new positions
-			/*Iterator y = ((LinkedList<Figure>) figurelistNew).iterator();
-				while (y.hasNext()) {
-					Figure temp = (Figure) y.next();
-					System.out.println(temp + ", Index: " + figurelistNew.indexOf(temp));
-				}*/
-
-			// overwriting of the original list by the temporary one
-			figurelist = figurelistNew;
-			notifyDrawModelChangeListener(f, Type.DRAWING_CHANGED);
+			notifyDrawModelChangeListener(f, DrawModelEvent.Type.DRAWING_CHANGED);
 		}
 	}
+	
 	/** M: Remove all Listeners before clearing the list. */
 	@Override
 	public void removeAllFigures() {
@@ -172,9 +153,11 @@ public class StdDrawModel implements DrawModel {
 	 * This method notifies all observers (DataViews) on changes
 	 * modelChanged is implemented in StdDrawView Ctor
 	 */
-	public void notifyDrawModelChangeListener(Figure f, Type t){		
-		for (DrawModelListener ml : mListeners) {
-			ml.modelChanged(new DrawModelEvent(this, f, t));
+	public void notifyDrawModelChangeListener(Figure f, DrawModelEvent.Type t) {
+		DrawModelEvent dme = new DrawModelEvent(this, f, t);
+		DrawModelListener[] copy = mListeners.toArray(new DrawModelListener[]{});
+		for (DrawModelListener ml : copy) {
+			ml.modelChanged(dme);
 		}
 	}
 
