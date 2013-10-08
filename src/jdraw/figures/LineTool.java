@@ -17,12 +17,11 @@ import jdraw.framework.DrawTool;
 import jdraw.framework.DrawView;
 
 /**
- * This tool defines a mode for drawing rectangles.
+ * This tool defines a mode for drawing lines.
  *
  * @see jdraw.framework.Figure
  *
- * @author  Christoph Denzler
- * @version 2.1, 27.09.07
+ * @author  Caroline
  */
 public class LineTool implements DrawTool {
   
@@ -43,21 +42,21 @@ public class LineTool implements DrawTool {
 	private DrawView view;
 
 	/**
-	 * Temporary variable. During rectangle creation (during a
+	 * Temporary variable. During line creation (during a
 	 * mouse down - mouse drag - mouse up cycle) this variable refers
-	 * to the new rectangle that is inserted.
+	 * to the new line that is inserted.
 	 */
-	private Rect newRect = null;
+	private Line newLine = null;
 
 	/**
 	 * Temporary variable.
-	 * During rectangle creation this variable refers to the point the
+	 * During line creation this variable refers to the point the
 	 * mouse was first pressed.
 	 */
 	private Point anchor = null;
 
 	/**
-	 * Create a new rectangle tool for the given context.
+	 * Create a new line tool for the given context.
 	 * @param context a context to use this tool in.
 	 */
 	public LineTool(DrawContext context) {
@@ -75,17 +74,17 @@ public class LineTool implements DrawTool {
 	}
 
 	/**
-	 * Activates the Rectangle Mode. There will be a
+	 * Activates the Line Mode. There will be a
 	 * specific menu added to the menu bar that provides settings for
-	 * Rectangle attributes
+	 * Line attributes
 	 */
 	public void activate() {
-		this.context.showStatusText("Rectangle Mode");
+		this.context.showStatusText("Line Mode");
 	}
 
 	/**
-	 * Initializes a new Rectangle object by setting an anchor
-	 * point where the mouse was pressed. A new Rectangle is then
+	 * Initializes a new Line object by setting an anchor
+	 * point where the mouse was pressed. A new Line is then
 	 * added to the model.
 	 * @param x x-coordinate of mouse
 	 * @param y y-coordinate of mouse
@@ -94,16 +93,16 @@ public class LineTool implements DrawTool {
 	 * @see jdraw.framework.DrawTool#mouseDown(int, int, MouseEvent)
 	 */
 	public void mouseDown(int x, int y, MouseEvent e) {
-		if (newRect != null) {
+		if (newLine != null) {
 			throw new IllegalStateException();
 		}
 		anchor = new Point(x, y);
-		newRect = new Rect(x, y, 0, 0);
-		view.getModel().addFigure(newRect);
+		newLine = new Line(x, y, 0, 0);
+		view.getModel().addFigure(newLine);
 	}
 
 	/**
-	 * During a mouse drag, the Rectangle will be resized according to the mouse
+	 * During a mouse drag, the Line will be resized according to the mouse
 	 * position. The status bar shows the current size.
 	 * 
 	 * @param x   x-coordinate of mouse
@@ -114,13 +113,13 @@ public class LineTool implements DrawTool {
 	 * @see jdraw.framework.DrawTool#mouseDrag(int, int, MouseEvent)
 	 */
 	public void mouseDrag(int x, int y, MouseEvent e) {
-		newRect.setBounds(anchor, new Point(x, y));
-		java.awt.Rectangle r = newRect.getBounds();
+		newLine.setBounds(anchor, new Point(x, y));
+		java.awt.Rectangle r = newLine.getBounds();
 		this.context.showStatusText("w: " + r.width + ", h: " + r.height);
 	}
 
 	/**
-	 * When the user releases the mouse, the Rectangle object is updated
+	 * When the user releases the mouse, the Line object is updated
 	 * according to the color and fill status settings.
 	 * 
 	 * @param x   x-coordinate of mouse
@@ -131,10 +130,10 @@ public class LineTool implements DrawTool {
 	 * @see jdraw.framework.DrawTool#mouseUp(int, int, MouseEvent)
 	 */
 	public void mouseUp(int x, int y, MouseEvent e) {
-		newRect.setBounds(anchor, new Point(x, y));
-		newRect = null;
+		newLine.setBounds(anchor, new Point(x, y));
+		newLine = null;
 		anchor = null;
-		this.context.showStatusText("Rectangle Mode");
+		this.context.showStatusText("Line Mode");
 	}
 
 	@Override
