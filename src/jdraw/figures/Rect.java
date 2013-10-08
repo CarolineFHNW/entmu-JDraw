@@ -9,7 +9,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import jdraw.framework.Figure;
@@ -28,10 +28,10 @@ public class Rect implements Figure {
 	 * Use the java.awt.Rectangle in order to save/reuse code.
 	 */
 	private java.awt.Rectangle rectangle;
-	
+
 	/** Register all DrawModelListeners in a list */
-	private List<FigureListener> fListeners = new ArrayList<FigureListener>();
-	
+	private final List<FigureListener> fListeners = new LinkedList<FigureListener>();
+
 	/**
 	 * Create a new rectangle of the given dimension.
 	 * @param x the x-coordinate of the upper left corner of the rectangle
@@ -50,22 +50,29 @@ public class Rect implements Figure {
 	public void draw(Graphics g) {
 		g.setColor(Color.WHITE);
 		g.fillRect(rectangle.x, rectangle.y, 
-							 rectangle.width, rectangle.height);
+				rectangle.width, rectangle.height);
 		g.setColor(Color.BLACK);
 		g.drawRect(rectangle.x, rectangle.y, 
-							 rectangle.width, rectangle.height);
+				rectangle.width, rectangle.height);
 	}
-	
+
 	@Override
 	public void setBounds(Point origin, Point corner) {
+		// Only notify real changes */
+		java.awt.Rectangle original = new java.awt.Rectangle(rectangle);
 		rectangle.setFrameFromDiagonal(origin, corner);
-		notifyFigureListener();		// notification of change
+		if(!original.equals(rectangle)) {
+			propagateFigureEvent(new FigureEvent(this));
+		}
 	}
 
 	@Override
 	public void move(int dx, int dy) {
-		rectangle.setLocation(rectangle.x + dx, rectangle.y + dy);
-		notifyFigureListener();		// notification of change
+		// only notify real changes
+		if (dx != 0 || dy != 0) {
+			rectangle.setLocation(rectangle.x + dx, rectangle.y + dy);
+			propagateFigureEvent(new FigureEvent(this));		// notification of change
+		}
 	}
 
 	@Override
@@ -96,16 +103,17 @@ public class Rect implements Figure {
 	public void removeFigureListener(FigureListener listener) {
 		fListeners.remove(listener);
 	}
-	
+
 	/**
 	 * Notification method 
 	 * This class is being observed by DrawModel implementing classes 
 	 * This method notifies all observers on changes
 	 * figureChanged is implemented in DrawModel Ctor
 	 */
-	public void notifyFigureListener(){
-		for (FigureListener fl : fListeners) {
-			fl.figureChanged(new FigureEvent(this));
+	public void propagateFigureEvent(FigureEvent e){
+		FigureListener[] copy = fListeners.toArray(new FigureListener[fListeners.size()]);
+		for (FigureListener fl : copy) {
+			fl.figureChanged(e);
 		}
 	}
 
