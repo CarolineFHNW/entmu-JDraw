@@ -28,7 +28,7 @@ import jdraw.framework.FigureListener;
  * @author Caroline Schnell, Marlene Wittwer
  *
  */
-public class StdDrawModel implements DrawModel {
+public class StdDrawModel implements DrawModel, FigureListener {
 
 	/** C: The view's selection. */
 	private List<Figure> figurelist = new LinkedList<Figure>();
@@ -39,24 +39,12 @@ public class StdDrawModel implements DrawModel {
 	/** M: Register all DrawModelListeners in a list. */
 	private final List<DrawModelListener> mListeners = new LinkedList<DrawModelListener>();
 
-	/** Creates a new StdDrawModel. */
-	public StdDrawModel() {
-		fl = new FigureListener() {
-			// figureChanged(e) is the UPDATE method of this observer
-			@Override
-			public void figureChanged(FigureEvent e) {
-				//System.out.println("Geaenderte Figur: " +e.getFigure());
-				notifyDrawModelChangeListener(e.getFigure(), Type.FIGURE_CHANGED);
-			}
-		};
-	}
-
 	/** M: Only add FigureListener if f is being added to the list. */
 	@Override
 	public void addFigure(Figure f) {
 		if(f != null && !figurelist.contains(f)) {
 			figurelist.add(f);
-			f.addFigureListener(fl);
+			f.addFigureListener(this);
 			notifyDrawModelChangeListener(f, Type.FIGURE_ADDED);
 			//System.out.println(f + ", Index: " + figurelist.indexOf(f));
 		}
@@ -75,7 +63,7 @@ public class StdDrawModel implements DrawModel {
 	public void removeFigure(Figure f) {
 		if(figurelist.contains(f)) {
 			figurelist.remove(f);
-			f.removeFigureListener(fl);
+			f.removeFigureListener(this);
 			notifyDrawModelChangeListener(f, Type.FIGURE_REMOVED);
 		}
 	}
@@ -160,6 +148,12 @@ public class StdDrawModel implements DrawModel {
 		for (DrawModelListener ml : copy) {
 			ml.modelChanged(dme);
 		}
+	}
+
+	@Override
+	public void figureChanged(FigureEvent e) {
+		notifyDrawModelChangeListener(e.getFigure(), DrawModelEvent.Type.FIGURE_CHANGED);
+		
 	}
 
 }
