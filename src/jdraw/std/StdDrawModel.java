@@ -7,6 +7,7 @@ package jdraw.std;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class StdDrawModel implements DrawModel {
 	private FigureListener fl;
 
 	/** M: Register all DrawModelListeners in a list. */
-	private List<DrawModelListener> mListeners = new ArrayList<DrawModelListener>();
+	private final List<DrawModelListener> mListeners = new LinkedList<DrawModelListener>();
 
 	/** Creates a new StdDrawModel. */
 	public StdDrawModel() {
@@ -64,7 +65,7 @@ public class StdDrawModel implements DrawModel {
 	/** M: Return a copy of the current figurelist to avoid concurrency problem. */
 	@Override
 	public Iterable<Figure> getFigures() {
-		return new LinkedList<Figure>(figurelist);
+		return Collections.unmodifiableList(figurelist);
 	}
 
 	/** M: Only remove FigureListener if f is contained in list.  
@@ -81,7 +82,9 @@ public class StdDrawModel implements DrawModel {
 
 	@Override
 	public void addModelChangeListener(DrawModelListener listener) {
-		mListeners.add(listener);
+		if (listener != null && !mListeners.contains(listener)) {
+			mListeners.add(listener);
+		}
 	}
 
 	@Override
@@ -117,16 +120,14 @@ public class StdDrawModel implements DrawModel {
 		}
 
 		if(pos != index){
-
 			// remove element that needs repositioning
 			figurelistCopy.remove(f);
 			// add element at required position
 			figurelistCopy.add(index, f);
-
 			notifyDrawModelChangeListener(f, DrawModelEvent.Type.DRAWING_CHANGED);
 		}
 	}
-	
+
 	/** M: Remove all Listeners before clearing the list. */
 	@Override
 	public void removeAllFigures() {
